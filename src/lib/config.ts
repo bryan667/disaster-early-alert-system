@@ -1,0 +1,22 @@
+function requireEnv(name: string) {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(`${name} is required.`);
+  }
+
+  return value;
+}
+
+export const env = {
+  get databaseUrl() {
+    return requireEnv("DATABASE_URL");
+  },
+  get openAiApiKey() {
+    return requireEnv("OPENAI_API_KEY");
+  },
+  openAiModel: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+  resendApiKey: process.env.RESEND_API_KEY,
+  alertEmailTo: process.env.ALERT_EMAIL_TO,
+  alertEmailFrom: process.env.ALERT_EMAIL_FROM,
+};
