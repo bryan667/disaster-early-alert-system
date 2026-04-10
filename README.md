@@ -5,11 +5,12 @@ Starter implementation for the DEAS PRD: RSS ingestion, OpenAI-based disaster ex
 ## Quick start
 
 1. Copy `.env.example` to `.env`.
-2. Create a PostgreSQL database and apply [`db/schema.sql`](./db/schema.sql).
-3. Install dependencies with `npm install`.
+2. Install dependencies with `npm install`.
+3. Start local PostgreSQL with Docker using `npm run db:up`.
 4. Seed mock policyholders with `npm run db:seed`.
 5. Start the dashboard with `npm run dev`.
 6. Trigger the watcher with `POST /api/watcher` or `npm run watcher:run`.
+7. Stop the local database later with `npm run db:down`.
 
 ## Environment
 
