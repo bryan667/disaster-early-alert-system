@@ -2,7 +2,14 @@ import Parser from "rss-parser";
 import { FEEDS } from "@/lib/feeds";
 import type { FeedItem } from "@/lib/types";
 
-const parser = new Parser();
+const parser = new Parser({
+  requestOptions: {
+    headers: {
+      "user-agent": "DEAS/0.1 (+https://localhost)",
+      accept: "application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
+    },
+  },
+});
 
 function coerceDate(value?: string): Date | null {
   if (!value) {
@@ -14,7 +21,7 @@ function coerceDate(value?: string): Date | null {
 }
 
 export async function fetchFeedItems(): Promise<FeedItem[]> {
-  const batches = await Promise.all(
+  const batches = await Promise.allSettled(
     FEEDS.map(async (feed) => {
       const parsed = await parser.parseURL(feed.url);
 
@@ -31,5 +38,15 @@ export async function fetchFeedItems(): Promise<FeedItem[]> {
     }),
   );
 
-  return batches.flat();
+  const successfulItems = batches.flatMap((result) =>
+    result.status === "fulfilled" ? result.value : [],
+  );
+
+  for (const result of batches) {
+    if (result.status === "rejected") {
+      console.warn("RSS feed fetch failed:", result.reason);
+    }
+  }
+
+  return successfulItems;
 }
