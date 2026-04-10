@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 function requireEnv(name: string) {
   const value = process.env[name];
 
