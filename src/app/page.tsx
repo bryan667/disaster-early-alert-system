@@ -72,18 +72,18 @@ export default async function HomePage() {
                   <td className="rounded-l-3xl px-4 py-5">
                     <div className="font-semibold text-ink">{alert.headline}</div>
                     <div className="mt-1 text-xs uppercase tracking-[0.15em] text-alert">
-                      {alert.disaster_type}
+                      {alert.disasterType}
                     </div>
                   </td>
                   <td className="px-4 py-5">
                     {[alert.city, alert.barangay].filter(Boolean).join(", ")}
                   </td>
-                  <td className="px-4 py-5 font-semibold">{alert.at_risk_count.toLocaleString()}</td>
-                  <td className="px-4 py-5">{formatDate(alert.created_at)}</td>
+                  <td className="px-4 py-5 font-semibold">{alert.atRiskCount.toLocaleString()}</td>
+                  <td className="px-4 py-5">{formatDate(alert.createdAt)}</td>
                   <td className="rounded-r-3xl px-4 py-5">
                     <a
                       className="text-surge underline underline-offset-4"
-                      href={alert.source_url}
+                      href={alert.sourceUrl}
                       target="_blank"
                       rel="noreferrer"
                     >

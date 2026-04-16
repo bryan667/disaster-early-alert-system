@@ -1,4 +1,4 @@
-import { getPool } from "@/lib/db";
+import { getPrisma } from "@/lib/db";
 import {
   buildDedupeKey,
   countAtRiskPolicies,
@@ -12,7 +12,7 @@ import { analyzeHeadline } from "@/lib/openai";
 import { fetchFeedItems } from "@/lib/rss";
 
 export async function runWatcher() {
-  const pool = getPool();
+  const prisma = getPrisma();
   const feedItems = await fetchFeedItems();
   const createdAlerts = [];
 
@@ -60,14 +60,14 @@ export async function runWatcher() {
 
     const emailResult = await sendAlertEmail(alert);
     if (!emailResult.skipped) {
-      await pool.query(
-        `
-          UPDATE disaster_events
-          SET notified_at = NOW()
-          WHERE id = $1
-        `,
-        [alert.id],
-      );
+      await prisma.disasterEvent.update({
+        where: {
+          id: alert.id,
+        },
+        data: {
+          notifiedAt: new Date(),
+        },
+      });
     }
 
     await markFeedItemProcessed({

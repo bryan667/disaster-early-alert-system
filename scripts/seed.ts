@@ -1,7 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { getPool } from '@/lib/db';
+import { getPrisma } from '@/lib/db';
 
 const HOTSPOTS = [
   { city: 'Muntinlupa', barangays: ['Alabang', 'Ayala Alabang', 'Cupang'] },
@@ -43,22 +41,17 @@ const HOTSPOTS = [
 ] as const;
 
 async function main() {
-  const pool = getPool();
-  const schema = await readFile(
-    join(process.cwd(), 'db', 'schema.sql'),
-    'utf8',
-  );
-  await pool.query(schema);
-  await pool.query(
-    'TRUNCATE TABLE processed_feed_items, disaster_events, policyholders',
-  );
+  const prisma = getPrisma();
+
+  await prisma.processedFeedItem.deleteMany();
+  await prisma.disasterEvent.deleteMany();
+  await prisma.policyholder.deleteMany();
 
   const totalRecords = 10000;
   const batchSize = 500;
 
   for (let start = 0; start < totalRecords; start += batchSize) {
-    const values: string[] = [];
-    const params: string[] = [];
+    const data = [];
     const end = Math.min(start + batchSize, totalRecords);
 
     for (let index = start; index < end; index += 1) {
@@ -69,45 +62,29 @@ async function main() {
       const policyType = index % 2 === 0 ? 'Property' : 'Motor';
       const premiumAmount = (2000 + (index % 250) * 19.75).toFixed(2);
 
-      const offset = (index - start) * 7;
-      values.push(
-        `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`,
-      );
-      params.push(
-        randomUUID(),
+      data.push({
+        id: randomUUID(),
         fullName,
         email,
-        hotspot.city,
+        city: hotspot.city,
         barangay,
         policyType,
         premiumAmount,
-      );
+      });
     }
 
-    await pool.query(
-      `
-        INSERT INTO policyholders (
-          id,
-          full_name,
-          email,
-          city,
-          barangay,
-          policy_type,
-          premium_amount
-        )
-        VALUES ${values.join(', ')}
-      `,
-      params,
-    );
+    await prisma.policyholder.createMany({
+      data,
+    });
   }
 
   console.log('Seeded 10,000 mock policyholders.');
-  await pool.end();
+  await prisma.$disconnect();
 }
 
 main().catch(async (error) => {
-  const pool = getPool();
+  const prisma = getPrisma();
   console.error(error);
-  await pool.end();
+  await prisma.$disconnect();
   process.exit(1);
 });

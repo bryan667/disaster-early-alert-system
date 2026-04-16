@@ -21,7 +21,7 @@ export async function sendAlertEmail(alert: AlertRecord) {
   }
 
   const location = [alert.city, alert.barangay].filter(Boolean).join(", ");
-  const subject = `[ALERT] ${alert.disaster_type} in ${location} - ${alert.at_risk_count} Policies at Risk`;
+  const subject = `[ALERT] ${alert.disasterType} in ${location} - ${alert.atRiskCount} Policies at Risk`;
 
   await resend.emails.send({
     from: env.alertEmailFrom!,
@@ -30,11 +30,11 @@ export async function sendAlertEmail(alert: AlertRecord) {
     html: `
       <h1>Disaster Early Alert</h1>
       <p><strong>Event:</strong> ${alert.headline}</p>
-      <p><strong>Type:</strong> ${alert.disaster_type}</p>
+      <p><strong>Type:</strong> ${alert.disasterType}</p>
       <p><strong>Location:</strong> ${location}</p>
-      <p><strong>Severity:</strong> ${alert.severity_description}</p>
-      <p><strong>Policies at Risk:</strong> ${alert.at_risk_count}</p>
-      <p><a href="${alert.source_url}">Open source article</a></p>
+      <p><strong>Severity:</strong> ${alert.severityDescription}</p>
+      <p><strong>Policies at Risk:</strong> ${alert.atRiskCount}</p>
+      <p><a href="${alert.sourceUrl}">Open source article</a></p>
     `,
   });
 

@@ -1,0 +1,57 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Policyholder {
+  id            String   @id @default(uuid()) @db.Uuid
+  fullName      String   @map("full_name")
+  email         String
+  city          String
+  barangay      String
+  policyType    String   @map("policy_type")
+  premiumAmount Decimal  @default(0) @map("premium_amount") @db.Decimal(12, 2)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([city, barangay], map: "idx_policyholders_city_barangay")
+  @@map("policyholders")
+}
+
+model ProcessedFeedItem {
+  sourceUrl   String    @id @map("source_url")
+  sourceName  String    @map("source_name")
+  headline    String
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  processedAt DateTime  @default(now()) @map("processed_at") @db.Timestamptz(6)
+  outcome     String
+
+  @@map("processed_feed_items")
+}
+
+model DisasterEvent {
+  id                  String    @id @default(uuid()) @db.Uuid
+  sourceName          String    @map("source_name")
+  sourceUrl           String    @unique @map("source_url")
+  headline            String
+  snippet             String
+  publishedAt         DateTime? @map("published_at") @db.Timestamptz(6)
+  disasterType        String    @map("disaster_type")
+  severityDescription String    @map("severity_description")
+  city                String
+  barangay            String?
+  confidenceScore     Decimal   @map("confidence_score") @db.Decimal(4, 3)
+  dedupeKey           String    @map("dedupe_key")
+  atRiskCount         Int       @default(0) @map("at_risk_count")
+  status              String    @default("active")
+  rawPayload          Json      @map("raw_payload")
+  notifiedAt          DateTime? @map("notified_at") @db.Timestamptz(6)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt(sort: Desc)], map: "idx_disaster_events_lookup")
+  @@index([dedupeKey, createdAt(sort: Desc)], map: "idx_disaster_events_dedupe")
+  @@map("disaster_events")
+}

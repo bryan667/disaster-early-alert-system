@@ -19,16 +19,18 @@ export type FeedItem = {
 
 export type AlertRecord = {
   id: string;
-  source_name: string;
-  source_url: string;
+  sourceName: string;
+  sourceUrl: string;
   headline: string;
-  disaster_type: DisasterType;
-  severity_description: string;
+  snippet: string;
+  disasterType: DisasterType;
+  severityDescription: string;
   city: string;
   barangay: string | null;
-  at_risk_count: number;
-  confidence_score: string;
-  published_at: Date | null;
-  created_at: Date;
+  atRiskCount: number;
+  confidenceScore: number;
+  publishedAt: Date | null;
+  notifiedAt: Date | null;
+  createdAt: Date;
   status: string;
 };
