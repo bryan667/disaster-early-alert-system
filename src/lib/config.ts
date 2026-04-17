@@ -14,6 +14,12 @@ export const env = {
   get databaseUrl() {
     return requireEnv("DATABASE_URL");
   },
+  get supabaseUrl() {
+    return requireEnv("SUPABASE_URL");
+  },
+  get supabaseServiceRoleKey() {
+    return requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  },
   get openAiApiKey() {
     return requireEnv("OPENAI_API_KEY");
   },

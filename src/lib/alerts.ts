@@ -1,5 +1,6 @@
 import type { DisasterEvent } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import type { AlertRecord, DisasterAlert, FeedItem } from "@/lib/types";
 
 function normalizeKeyPart(value: string | null | undefined) {
@@ -34,6 +35,44 @@ function mapAlertRecord(event: DisasterEvent): AlertRecord {
     publishedAt: event.publishedAt,
     notifiedAt: event.notifiedAt,
     createdAt: event.createdAt,
+    status: event.status,
+  };
+}
+
+type DisasterEventRow = {
+  id: string;
+  source_name: string;
+  source_url: string;
+  headline: string;
+  snippet: string;
+  disaster_type: AlertRecord["disasterType"];
+  severity_description: string;
+  city: string;
+  barangay: string | null;
+  at_risk_count: number;
+  confidence_score: number | string;
+  published_at: string | null;
+  notified_at: string | null;
+  created_at: string;
+  status: string;
+};
+
+function mapSupabaseAlertRecord(event: DisasterEventRow): AlertRecord {
+  return {
+    id: event.id,
+    sourceName: event.source_name,
+    sourceUrl: event.source_url,
+    headline: event.headline,
+    snippet: event.snippet,
+    disasterType: event.disaster_type,
+    severityDescription: event.severity_description,
+    city: event.city,
+    barangay: event.barangay,
+    atRiskCount: event.at_risk_count,
+    confidenceScore: Number(event.confidence_score),
+    publishedAt: event.published_at ? new Date(event.published_at) : null,
+    notifiedAt: event.notified_at ? new Date(event.notified_at) : null,
+    createdAt: new Date(event.created_at),
     status: event.status,
   };
 }
@@ -148,16 +187,19 @@ export async function markFeedItemProcessed(input: {
 }
 
 export async function getActiveAlerts() {
-  const prisma = getPrisma();
-  const events = await prisma.disasterEvent.findMany({
-    where: {
-      status: "active",
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 50,
-  });
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("disaster_events")
+    .select(
+      "id, source_name, source_url, headline, snippet, disaster_type, severity_description, city, barangay, at_risk_count, confidence_score, published_at, notified_at, created_at, status",
+    )
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-  return events.map(mapAlertRecord);
+  if (error) {
+    throw new Error(`Failed to fetch active alerts from Supabase: ${error.message}`);
+  }
+
+  return (data ?? []).map((event) => mapSupabaseAlertRecord(event as DisasterEventRow));
 }
