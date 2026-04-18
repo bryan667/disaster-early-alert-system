@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { runWatcher } from "@/lib/watcher";
+import { runWatcherNonBlocking } from "@/lib/watcher";
 
 export async function POST() {
   try {
-    const result = await runWatcher();
+    const result = await runWatcherNonBlocking();
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(

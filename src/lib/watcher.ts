@@ -1,4 +1,4 @@
-import { getPrisma } from "@/lib/db";
+import { getPrisma } from '@/lib/db';
 import {
   buildDedupeKey,
   countAtRiskPolicies,
@@ -6,14 +6,14 @@ import {
   hasProcessedSource,
   hasRecentDuplicate,
   markFeedItemProcessed,
-} from "@/lib/alerts";
-import { sendAlertEmail } from "@/lib/email";
-import { analyzeHeadline } from "@/lib/openai";
-import { fetchFeedItems } from "@/lib/rss";
+} from '@/lib/alerts';
+import { sendAlertEmail } from '@/lib/email';
+import { analyzeHeadline } from '@/lib/openai';
+import { fetchFeedItems } from '@/lib/rss';
+import type { FeedItem } from '@/lib/types';
 
-export async function runWatcher() {
+export async function processFeedItems(feedItems: FeedItem[]) {
   const prisma = getPrisma();
-  const feedItems = await fetchFeedItems();
   const createdAlerts = [];
 
   for (const item of feedItems) {
@@ -33,7 +33,7 @@ export async function runWatcher() {
         sourceName: item.sourceName,
         headline: item.title,
         publishedAt: item.publishedAt,
-        outcome: "ignored",
+        outcome: 'ignored',
       });
       continue;
     }
@@ -46,12 +46,15 @@ export async function runWatcher() {
         sourceName: item.sourceName,
         headline: item.title,
         publishedAt: item.publishedAt,
-        outcome: "duplicate",
+        outcome: 'duplicate',
       });
       continue;
     }
 
-    const atRiskCount = await countAtRiskPolicies(analysis.city, analysis.barangay);
+    const atRiskCount = await countAtRiskPolicies(
+      analysis.city,
+      analysis.barangay,
+    );
     const alert = await createDisasterEvent({
       feedItem: item,
       alert: analysis,
@@ -75,14 +78,31 @@ export async function runWatcher() {
       sourceName: item.sourceName,
       headline: item.title,
       publishedAt: item.publishedAt,
-      outcome: "alerted",
+      outcome: 'alerted',
     });
     createdAlerts.push(alert);
   }
 
+  return createdAlerts;
+}
+
+export async function runWatcher() {
+  const feedItems = await fetchFeedItems();
+  await processFeedItems(feedItems);
+
   return {
-    processed: feedItems.length,
-    created: createdAlerts.length,
-    alerts: createdAlerts,
+    feedsFetched: feedItems.length,
+  };
+}
+
+export async function runWatcherNonBlocking() {
+  const feedItems = await fetchFeedItems();
+
+  void processFeedItems(feedItems).catch((error) => {
+    console.error('Background watcher processing failed:', error);
+  });
+
+  return {
+    feedsFetched: feedItems.length,
   };
 }
