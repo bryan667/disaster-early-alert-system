@@ -40,6 +40,10 @@ const HOTSPOTS = [
   { city: 'Naga', barangays: ['Concepcion Grande', 'Pacol', 'Sabang'] },
 ] as const;
 
+function pickRandom<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 async function main() {
   const prisma = getPrisma();
 
@@ -55,8 +59,8 @@ async function main() {
     const end = Math.min(start + batchSize, totalRecords);
 
     for (let index = start; index < end; index += 1) {
-      const hotspot = HOTSPOTS[index % HOTSPOTS.length];
-      const barangay = hotspot.barangays[index % hotspot.barangays.length];
+      const hotspot = pickRandom(HOTSPOTS);
+      const barangay = pickRandom(hotspot.barangays);
       const fullName = `Policyholder ${index + 1}`;
       const email = `policyholder${index + 1}@example.com`;
       const policyType = index % 2 === 0 ? 'Property' : 'Motor';
