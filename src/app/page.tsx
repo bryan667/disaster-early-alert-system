@@ -1,13 +1,13 @@
-import { getActiveAlerts } from "@/lib/alerts";
+import { getActiveAlerts } from '@/lib/alerts';
 
 function formatDate(value: Date | null) {
   if (!value) {
-    return "Unknown";
+    return 'Unknown';
   }
 
-  return new Intl.DateTimeFormat("en-PH", {
-    dateStyle: "medium",
-    timeStyle: "short",
+  return new Intl.DateTimeFormat('en-PH', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
   }).format(new Date(value));
 }
 
@@ -19,21 +19,26 @@ export default async function HomePage() {
       <section className="grid gap-6 rounded-[2rem] border border-white/60 bg-white/75 p-8 shadow-panel backdrop-blur">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <p className="text-sm uppercase tracking-[0.3em] text-surge">Disaster Early Alert System</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-surge">
+              Disaster Early Alert System
+            </p>
             <h1 className="mt-3 text-4xl font-semibold text-ink md:text-6xl">
-              A live watchtower for insurance operations.
+              A live feed for insurance operations.
             </h1>
             <p className="mt-4 text-lg leading-8 text-slate-600">
-              DEAS monitors Philippine disaster coverage, extracts high-severity incidents,
-              and estimates exposed policies at the barangay level.
+              DEAS monitors Philippine disaster coverage, extracts high-severity
+              incidents, and estimates exposed policies at the barangay level.
             </p>
           </div>
 
           <div className="grid min-w-[240px] gap-3 rounded-[1.5rem] bg-ink p-5 text-white">
-            <span className="text-sm uppercase tracking-[0.2em] text-slate-300">Active alerts</span>
+            <span className="text-sm uppercase tracking-[0.2em] text-slate-300">
+              Active alerts
+            </span>
             <strong className="text-5xl">{alerts.length}</strong>
             <p className="m-0 text-sm text-slate-300">
-              Use <code>POST /api/watcher</code> to run the ingestion flow manually.
+              Use <code>POST /api/watcher</code> to run the ingestion flow
+              manually.
             </p>
           </div>
         </div>
@@ -42,8 +47,12 @@ export default async function HomePage() {
       <section className="rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-panel">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="m-0 text-2xl font-semibold text-ink">Active Red Alerts</h2>
-            <p className="mt-1 text-sm text-slate-500">Most recent alerts detected by the watcher pipeline.</p>
+            <h2 className="m-0 text-2xl font-semibold text-ink">
+              Active Red Alerts
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Most recent alerts detected by the watcher pipeline.
+            </p>
           </div>
         </div>
 
@@ -61,24 +70,35 @@ export default async function HomePage() {
             <tbody>
               {alerts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="rounded-3xl bg-slate-50 px-4 py-8 text-center text-slate-500">
-                    No alerts yet. Seed the database, set your env vars, and trigger the watcher to populate this view.
+                  <td
+                    colSpan={5}
+                    className="rounded-3xl bg-slate-50 px-4 py-8 text-center text-slate-500"
+                  >
+                    No alerts yet. Seed the database, set your env vars, and
+                    trigger the watcher to populate this view.
                   </td>
                 </tr>
               ) : null}
 
               {alerts.map((alert) => (
-                <tr key={alert.id} className="rounded-3xl bg-slate-50 text-sm text-slate-700">
+                <tr
+                  key={alert.id}
+                  className="rounded-3xl bg-slate-50 text-sm text-slate-700"
+                >
                   <td className="rounded-l-3xl px-4 py-5">
-                    <div className="font-semibold text-ink">{alert.headline}</div>
+                    <div className="font-semibold text-ink">
+                      {alert.headline}
+                    </div>
                     <div className="mt-1 text-xs uppercase tracking-[0.15em] text-alert">
                       {alert.disasterType}
                     </div>
                   </td>
                   <td className="px-4 py-5">
-                    {[alert.city, alert.barangay].filter(Boolean).join(", ")}
+                    {[alert.city, alert.barangay].filter(Boolean).join(', ')}
                   </td>
-                  <td className="px-4 py-5 font-semibold">{alert.atRiskCount.toLocaleString()}</td>
+                  <td className="px-4 py-5 font-semibold">
+                    {alert.atRiskCount.toLocaleString()}
+                  </td>
                   <td className="px-4 py-5">{formatDate(alert.createdAt)}</td>
                   <td className="rounded-r-3xl px-4 py-5">
                     <a

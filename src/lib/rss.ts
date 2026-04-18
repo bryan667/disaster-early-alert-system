@@ -54,7 +54,7 @@ export async function fetchFeedItems(): Promise<FeedItem[]> {
     }),
   );
 
-  const successfulItems = batches.flatMap((result) =>
+  const successfulItems: FeedItem[] = batches.flatMap((result) =>
     result.status === 'fulfilled' ? result.value : [],
   );
 
