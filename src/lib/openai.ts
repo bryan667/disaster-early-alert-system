@@ -1,11 +1,11 @@
-import OpenAI from "openai";
-import { z } from "zod";
-import { env } from "@/lib/config";
-import type { DisasterAlert } from "@/lib/types";
+import OpenAI from 'openai';
+import { z } from 'zod';
+import { env } from '@/lib/config';
+import type { DisasterAlert } from '@/lib/types';
 
 const disasterAlertSchema = z.object({
   isRedAlert: z.boolean(),
-  disasterType: z.enum(["Fire", "Flood", "Earthquake", "Storm", "Volcano"]),
+  disasterType: z.enum(['Fire', 'Flood', 'Earthquake', 'Storm', 'Volcano']),
   severity_description: z.string(),
   city: z.string(),
   barangay: z.string().nullable(),
@@ -13,26 +13,26 @@ const disasterAlertSchema = z.object({
 });
 
 const schemaJson = {
-  type: "object",
+  type: 'object',
   additionalProperties: false,
   properties: {
-    isRedAlert: { type: "boolean" },
+    isRedAlert: { type: 'boolean' },
     disasterType: {
-      type: "string",
-      enum: ["Fire", "Flood", "Earthquake", "Storm", "Volcano"],
+      type: 'string',
+      enum: ['Fire', 'Flood', 'Earthquake', 'Storm', 'Volcano'],
     },
-    severity_description: { type: "string" },
-    city: { type: "string" },
-    barangay: { type: ["string", "null"] },
-    confidence_score: { type: "number" },
+    severity_description: { type: 'string' },
+    city: { type: 'string' },
+    barangay: { type: ['string', 'null'] },
+    confidence_score: { type: 'number' },
   },
   required: [
-    "isRedAlert",
-    "disasterType",
-    "severity_description",
-    "city",
-    "barangay",
-    "confidence_score",
+    'isRedAlert',
+    'disasterType',
+    'severity_description',
+    'city',
+    'barangay',
+    'confidence_score',
   ],
 } as const;
 
@@ -41,6 +41,8 @@ const SYSTEM_PROMPT = `Role: You are a Philippine Disaster Analyst for an insura
 Task: Analyze the provided news headline and snippet.
 
 Filter: Set isRedAlert to true ONLY if the event is a major disaster (for example Signal 3+ typhoon, 2nd alarm fire or higher, magnitude 6.0+ earthquake, or an actual volcanic eruption). Ignore minor traffic, small rain showers, historical stories, drills, advisories without a disaster, and duplicate recap content.
+
+Recency Check: Check the date/time in the news content and only treat it as relevant if it is current or very recent. If the report is old, historical, or clearly not recent, set isRedAlert to false.
 
 Location Extraction: Identify the specific Philippine city and barangay. If no barangay is mentioned, return null for that field.
 
@@ -63,14 +65,14 @@ export async function analyzeHeadline(input: {
     model: env.openAiModel,
     input: [
       {
-        role: "system",
-        content: [{ type: "input_text", text: SYSTEM_PROMPT }],
+        role: 'system',
+        content: [{ type: 'input_text', text: SYSTEM_PROMPT }],
       },
       {
-        role: "user",
+        role: 'user',
         content: [
           {
-            type: "input_text",
+            type: 'input_text',
             text: `Headline: ${input.title}\nSnippet: ${input.snippet}`,
           },
         ],
@@ -78,8 +80,8 @@ export async function analyzeHeadline(input: {
     ],
     text: {
       format: {
-        type: "json_schema",
-        name: "disaster_alert",
+        type: 'json_schema',
+        name: 'disaster_alert',
         schema: schemaJson,
         strict: true,
       },
